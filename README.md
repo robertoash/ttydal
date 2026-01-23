@@ -28,10 +28,11 @@ This project is heavily inspired by what [Maxteabag](https://github.com/Maxteaba
 - Player bar displaying track info, artist, album, playback time, and quality metrics
 - Multiple theme options for interface customization
 - Fully keyboard-driven interface
+- `new` Configurable keybindings - customize all keyboard shortcuts (see [KEYBINDINGS.md](KEYBINDINGS.md))
 - Settings auto-save on change
-- `new` Cover art display in albums list, tracks list, and player bar
-- `new` Image caching for cover art (stored in `~/.cache/ttydal/images/`)
-- `new` Vibrant color mode - colorize player bar text with album's vibrant color
+- Cover art display in albums list, tracks list, and player bar
+- Image caching for cover art (stored in `~/.cache/ttydal/images/`)
+- Vibrant color mode - colorize player bar text with album's vibrant color
 
 *warning: this video contain audio of music, mind your volume*
 
