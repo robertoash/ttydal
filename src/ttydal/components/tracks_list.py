@@ -13,6 +13,11 @@ from ttydal.services import TracksService, TidalServiceError
 from ttydal.services.tracks_cache import TracksCache
 from ttydal.logger import log
 from ttydal.components.cover_art_item import CoverArtItem
+from ttydal.keybindings import get_key
+
+# Load keybindings at module import time
+_k = lambda action: get_key("tracks_list", action)
+_nav = lambda action: get_key("navigation", action)
 
 
 # Pre-fetch next track URL this many seconds before current track ends
@@ -23,8 +28,11 @@ class TracksList(Container):
     """Tracks list widget for browsing and selecting tracks."""
 
     BINDINGS = [
-        Binding("enter", "play_selected_track", "Play Track", show=True),
-        Binding("r", "refresh_tracks", "Refresh", show=True),
+        Binding(_k("play_selected_track"), "play_selected_track", "Play Track", show=True),
+        Binding(_k("refresh_tracks"), "refresh_tracks", "Refresh", show=True),
+        Binding(_nav("cursor_down"), "cursor_down", "Down", show=False),
+        Binding(_nav("cursor_up"), "cursor_up", "Up", show=False),
+        Binding(_nav("cursor_left"), "focus_albums", "Albums", show=False),
     ]
 
     DEFAULT_CSS = """
@@ -54,10 +62,6 @@ class TracksList(Container):
 
     TracksList ListItem {
         height: 3;
-    }
-
-    TracksList ListItem:odd {
-        background: $boost;
     }
     """
 
@@ -616,6 +620,27 @@ class TracksList(Container):
             )
         else:
             log("  - No tracks loaded yet, nothing to refresh")
+
+    def action_cursor_down(self) -> None:
+        """Move cursor down in the list (vim j key)."""
+        list_view = self.query_one("#tracks-listview", ListView)
+        list_view.action_cursor_down()
+
+    def action_cursor_up(self) -> None:
+        """Move cursor up in the list (vim k key)."""
+        list_view = self.query_one("#tracks-listview", ListView)
+        list_view.action_cursor_up()
+
+    def action_focus_albums(self) -> None:
+        """Move focus to albums list (left navigation)."""
+        from ttydal.components.albums_list import AlbumsList
+
+        try:
+            albums_list = self.app.query_one(AlbumsList)
+            list_view = albums_list.query_one("#albums-listview")
+            list_view.focus()
+        except Exception:
+            pass
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle track selection (Enter key or double-click).

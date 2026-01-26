@@ -28,10 +28,11 @@ This project is heavily inspired by what [Maxteabag](https://github.com/Maxteaba
 - Player bar displaying track info, artist, album, playback time, and quality metrics
 - Multiple theme options for interface customization
 - Fully keyboard-driven interface
+- `new` Configurable keybindings - customize all keyboard shortcuts (see [KEYBINDINGS.md](KEYBINDINGS.md))
 - Settings auto-save on change
-- `new` Cover art display in albums list, tracks list, and player bar
-- `new` Image caching for cover art (stored in `~/.cache/ttydal/images/`)
-- `new` Vibrant color mode - colorize player bar text with album's vibrant color
+- Cover art display in albums list, tracks list, and player bar
+- Image caching for cover art (stored in `~/.cache/ttydal/images/`)
+- Vibrant color mode - colorize player bar text with album's vibrant color
 
 *warning: this video contain audio of music, mind your volume*
 
@@ -50,18 +51,13 @@ https://github.com/user-attachments/assets/ea975bea-b8f6-4d1a-a309-ec2d54390c3a
 
 ```bash
 # pipx (recommend)
-pipx install ttydal
+pipx install sqlit-tui
 
 # uv
-uv tool install ttydal
+uv tool install sqlit-tui
 
 # pip
-pip install ttydal
-```
-
-Then use it:
-```bash
-ttydal
+pip install sqlit-tui
 ```
 
 ### For development
