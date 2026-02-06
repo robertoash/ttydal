@@ -30,6 +30,7 @@ class ConfigManager:
         self.config_dir = Path.home() / ".ttydal"
         self.config_file = self.config_dir / "config.json"
         self._config: dict[str, Any] = {}
+        self._debug_override: bool = False
         self._load_config()
         self._initialized = True
 
@@ -129,7 +130,7 @@ class ConfigManager:
     @property
     def debug_logging_enabled(self) -> bool:
         """Get the debug logging enabled setting."""
-        return self.get("debug_logging_enabled", True)
+        return self._debug_override or self.get("debug_logging_enabled", False)
 
     @debug_logging_enabled.setter
     def debug_logging_enabled(self, value: bool) -> None:
