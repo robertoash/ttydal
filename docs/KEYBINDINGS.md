@@ -6,7 +6,7 @@ ttydal now supports configurable keybindings! You can customize all navigation a
 
 Keybindings are stored in `~/.ttydal/config.json` under the `keybindings` section.
 
-The first time you run ttydal after this update, the config file will be automatically created with default keybindings.
+Run `ttydal --init-config` to create the config file with default keybindings. The app works without a config file (uses bundled defaults).
 
 ## Configuration Structure
 
@@ -160,18 +160,11 @@ Examples:
 
 ### The config file doesn't exist
 
-The config file will be created automatically the first time you run ttydal. If it's missing:
-
-1. Run ttydal once
-2. Exit ttydal
-3. Check `~/.ttydal/config.json`
+Run `ttydal --init-config` to create it with default values.
 
 ### I want to reset to defaults
 
-1. Delete `~/.ttydal/config.json`
-2. Run ttydal again to recreate it with defaults
-
-Alternatively, manually restore the default keybindings shown in the Configuration Structure section above.
+Run `ttydal --init-config --force` to overwrite your config with the bundled defaults.
 
 ## Available Actions by Component
 
