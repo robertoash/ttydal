@@ -24,6 +24,10 @@ _nav = lambda action: get_key("navigation", action)
 PREFETCH_SECONDS_BEFORE_END = 15
 
 
+# Pre-fetch next track URL this many seconds before current track ends
+PREFETCH_SECONDS_BEFORE_END = 15
+
+
 class TracksList(Container):
     """Tracks list widget for browsing and selecting tracks."""
 
@@ -62,6 +66,10 @@ class TracksList(Container):
 
     TracksList ListItem {
         height: 3;
+    }
+
+    TracksList ListItem:odd {
+        background: $boost;
     }
     """
 
