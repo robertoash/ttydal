@@ -28,7 +28,7 @@ This project is heavily inspired by what [Maxteabag](https://github.com/Maxteaba
 - Player bar displaying track info, artist, album, playback time, and quality metrics
 - Multiple theme options for interface customization
 - Fully keyboard-driven interface
-- `new` Configurable keybindings - customize all keyboard shortcuts (see [KEYBINDINGS.md](KEYBINDINGS.md))
+- `new` Configurable keybindings - customize all keyboard shortcuts (see [KEYBINDINGS.md](docs/KEYBINDINGS.md))
 - Settings auto-save on change
 - Cover art display in albums list, tracks list, and player bar
 - Image caching for cover art (stored in `~/.cache/ttydal/images/`)
