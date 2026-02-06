@@ -534,75 +534,26 @@ class TracksList(Container):
             log(f"  - Error updating track indicators: {e}")
 
     def action_play_selected_track(self) -> None:
-        """Play the currently selected track or toggle pause (space key action).
-
-        Behavior:
-        - If no track selected: do nothing
-        - If selected track is different from playing track: play selected track
-        - If selected track is same as playing track: toggle pause
-        - If no track is playing: play selected track
-        """
-        log("=" * 80)
-        log("TracksList: Space key action triggered")
+        """Play the currently selected track (always starts from beginning)."""
+        log("TracksList: Play selected track action triggered")
         list_view = self.query_one("#tracks-listview", ListView)
         index = list_view.index
-        log(f"  - ListView index: {index}")
-        log(f"  - Total tracks: {len(self.tracks)}")
-        log(f"  - Current playing index: {self.current_playing_index}")
 
         if index is None or index >= len(self.tracks):
-            log("  - No track selected, toggling pause/play")
-            # No track selected, toggle pause on whatever is playing
-            from ttydal.player import Player
-
-            player = Player()
-            player.toggle_pause()
-            log("=" * 80)
+            log("  - No track selected, nothing to play")
             return
 
         selected_track = self.tracks[index]
-        log(
-            f"  - Selected track: {selected_track['name']} (ID: {selected_track['id']})"
-        )
+        log(f"  - Playing: {selected_track['name']}")
 
-        # Get currently playing track
-        from ttydal.player import Player
+        # Update current playing index and album
+        self.current_playing_index = index
+        self._playing_item_id = self.current_item_id
 
-        player = Player()
-        current_track = player.get_current_track()
-        log(
-            f"  - Current playing track: {current_track.get('name', 'Unknown') if current_track else 'None'}"
-        )
-        log(
-            f"  - Current playing track ID: {current_track.get('id', 'Unknown') if current_track else 'None'}"
-        )
+        # Update visual indicators
+        self._update_track_indicators()
 
-        if current_track and current_track.get("id") == selected_track["id"]:
-            # Same track is selected and playing, toggle pause
-            log("  - Same track already playing, toggling pause")
-            player.toggle_pause()
-            log("=" * 80)
-        else:
-            # Different track or no track playing, play the selected track
-            if current_track:
-                log(
-                    "  - Different track selected (current: {current_track.get('name', 'Unknown')}), playing new track"
-                )
-            else:
-                log("  - No track playing, starting playback")
-
-            # Update current playing index and album
-            self.current_playing_index = index
-            self._playing_item_id = self.current_item_id
-            log(f"  - Updated current playing index to: {index}")
-
-            # Update visual indicators
-            self._update_track_indicators()
-            log("  - Updated visual indicators")
-
-            log("  - Posting TrackSelected message")
-            self.post_message(self.TrackSelected(selected_track["id"], selected_track))
-            log("=" * 80)
+        self.post_message(self.TrackSelected(selected_track["id"], selected_track))
 
     def action_refresh_tracks(self) -> None:
         """Refresh the current tracks list (r key action).

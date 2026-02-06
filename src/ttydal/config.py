@@ -86,32 +86,6 @@ class ConfigManager:
             },
         }
 
-    def _merge_default_keybindings(self) -> None:
-        """Merge any missing keybindings from defaults into user config."""
-        defaults = self._get_default_keybindings()
-        changed = False
-
-        if "keybindings" not in self._config:
-            self._config["keybindings"] = defaults
-            changed = True
-        else:
-            user_bindings = self._config["keybindings"]
-
-            # Add missing components
-            for component, actions in defaults.items():
-                if component not in user_bindings:
-                    user_bindings[component] = actions
-                    changed = True
-                else:
-                    # Add missing actions within existing components
-                    for action, key in actions.items():
-                        if action not in user_bindings[component]:
-                            user_bindings[component][action] = key
-                            changed = True
-
-        if changed:
-            self._save_config()
-
     def _load_config(self) -> None:
         """Load configuration from file or create default config."""
         self.config_dir.mkdir(parents=True, exist_ok=True)
@@ -119,9 +93,6 @@ class ConfigManager:
         if self.config_file.exists():
             with open(self.config_file, "r") as f:
                 self._config = json.load(f)
-
-            # Merge in any missing keybindings from defaults
-            self._merge_default_keybindings()
         else:
             # Default configuration
             self._config = {
