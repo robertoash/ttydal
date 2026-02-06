@@ -4,6 +4,8 @@ Manages application configuration stored in ~/.ttydal/config.json
 """
 
 import json
+import shutil
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -31,79 +33,52 @@ class ConfigManager:
         self._load_config()
         self._initialized = True
 
+    @staticmethod
+    def _get_default_config() -> dict[str, Any]:
+        """Load the default configuration from the bundled default_config.json."""
+        default_config_file = resources.files("ttydal").joinpath("default_config.json")
+        return json.loads(default_config_file.read_text(encoding="utf-8"))
+
     def _get_default_keybindings(self) -> dict[str, dict[str, str]]:
         """Get default keybindings configuration."""
-        return {
-            "navigation": {
-                "cursor_down": "down",
-                "cursor_up": "up",
-                "cursor_left": "left",
-                "cursor_right": "right",
-            },
-            "app": {
-                "show_player": "p",
-                "show_config": "c",
-                "focus_albums": "a",
-                "focus_tracks": "t",
-                "open_search": "/",
-                "open_cache_info": "i",
-                "toggle_play": "space",
-                "toggle_auto_play": "n",
-                "toggle_shuffle": "s",
-                "toggle_vibrant_color": "v",
-                "seek_backward": "shift+left",
-                "seek_forward": "shift+right",
-                "play_previous": "P",
-                "play_next": "N",
-                "quit": "q",
-            },
-            "player_page": {
-                "toggle_playback": "space",
-            },
-            "albums_list": {
-                "refresh_albums": "r",
-            },
-            "tracks_list": {
-                "play_selected_track": "enter",
-                "refresh_tracks": "r",
-            },
-            "search_modal": {
-                "close_modal": "escape",
-                "select_result": "enter",
-                "play_track": "space",
-            },
-            "cache_modal": {
-                "close_modal": "escape",
-            },
-            "login_modal": {
-                "open_url": "o",
-                "copy_url": "c",
-                "check_login": "l",
-                "close_modal": "escape",
-            },
-            "config_page": {
-                "toggle_switch": "space",
-            },
-        }
+        return self._get_default_config().get("keybindings", {})
 
     def _load_config(self) -> None:
-        """Load configuration from file or create default config."""
+        """Load configuration from file, falling back to bundled defaults."""
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
         if self.config_file.exists():
             with open(self.config_file, "r") as f:
                 self._config = json.load(f)
         else:
-            # Default configuration
-            self._config = {
-                "theme": "rose-pine",
-                "quality": "high",  # high or low
-                "auto_play": True,  # auto-play next track when current finishes
-                "debug_logging_enabled": False,  # enable debug logging to ~/.ttydal/debug.log
-                "api_logging_enabled": False,  # enable API request/response logging to ~/.ttydal/debug-api.log
-                "keybindings": self._get_default_keybindings(),
-            }
-            self._save_config()
+            # No user config — use bundled defaults (don't write to disk)
+            self._config = self._get_default_config()
+
+    @staticmethod
+    def init_config(force: bool = False) -> Path:
+        """Copy the bundled default config to ~/.ttydal/config.json.
+
+        Args:
+            force: Overwrite existing config if True.
+
+        Returns:
+            Path to the created config file.
+
+        Raises:
+            FileExistsError: If config already exists and force is False.
+        """
+        config_dir = Path.home() / ".ttydal"
+        config_file = config_dir / "config.json"
+
+        if config_file.exists() and not force:
+            raise FileExistsError(
+                f"Config already exists at {config_file}. Use --force to overwrite."
+            )
+
+        config_dir.mkdir(parents=True, exist_ok=True)
+        default_config_file = resources.files("ttydal").joinpath("default_config.json")
+        shutil.copy2(str(default_config_file), str(config_file))
+        return config_file
 
     def _save_config(self) -> None:
         """Save configuration to file."""

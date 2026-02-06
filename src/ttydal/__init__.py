@@ -1,13 +1,38 @@
 """ttydal - Tidal in your terminal!"""
 
+import argparse
 import sys
 import traceback
 from ttydal.logger import log
-from ttydal.app import TtydalApp
+from ttydal.config import ConfigManager
 
 
 def main() -> None:
     """Launch the ttydal TUI application."""
+    parser = argparse.ArgumentParser(description="Tidal in your terminal!")
+    parser.add_argument(
+        "--init-config",
+        action="store_true",
+        help="Copy the default config to ~/.ttydal/config.json",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing config (use with --init-config)",
+    )
+    args = parser.parse_args()
+
+    if args.init_config:
+        try:
+            path = ConfigManager.init_config(force=args.force)
+            print(f"Config created at {path}")
+        except FileExistsError as e:
+            print(e, file=sys.stderr)
+            sys.exit(1)
+        return
+
+    from ttydal.app import TtydalApp
+
     log("="*80)
     log("Starting ttydal application")
     log("="*80)
