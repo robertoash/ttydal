@@ -62,10 +62,6 @@ class AlbumsList(Container):
     AlbumsList ListItem {
         height: 3;
     }
-
-    AlbumsList ListItem:odd {
-        background: $boost;
-    }
     """
 
     class AlbumSelected(Message):

@@ -1,13 +1,65 @@
 """ttydal - Tidal in your terminal!"""
 
+import argparse
 import sys
 import traceback
-from ttydal.logger import log
-from ttydal.app import TtydalApp
+from ttydal.config import ConfigManager
 
 
 def main() -> None:
     """Launch the ttydal TUI application."""
+    parser = argparse.ArgumentParser(
+        prog="ttydal",
+        usage="ttydal [-h] [--init-config [--force]] [--debug]",
+        description="Tidal in your terminal!",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "config:\n"
+            "  Config is stored at ~/.ttydal/config.json\n"
+            "  Run --init-config to create one from defaults\n"
+            "  The app works without a config file (uses bundled defaults)\n"
+            "\n"
+            "logs:\n"
+            "  Debug logs are written to ~/.ttydal/debug.log\n"
+            "  Enable with --debug or set debug_logging_enabled in config"
+        ),
+    )
+    parser.add_argument(
+        "--init-config",
+        action="store_true",
+        help="create default config at ~/.ttydal/config.json",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite existing config (only with --init-config)",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="enable debug logging (overrides config)",
+    )
+    args = parser.parse_args()
+
+    if args.force and not args.init_config:
+        parser.error("--force can only be used with --init-config")
+
+    if args.init_config:
+        try:
+            path = ConfigManager.init_config(force=args.force)
+            print(f"Config created at {path}")
+        except FileExistsError as e:
+            print(e, file=sys.stderr)
+            sys.exit(1)
+        return
+
+    config = ConfigManager()
+    if args.debug:
+        config._debug_override = True
+
+    from ttydal.logger import log
+    from ttydal.app import TtydalApp
+
     log("="*80)
     log("Starting ttydal application")
     log("="*80)
