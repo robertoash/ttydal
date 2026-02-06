@@ -463,6 +463,7 @@ class TracksList(Container):
                         "album": album_name,
                         "duration": track["duration"],
                         "cover_url": cover_url,
+                        "index": idx,  # Store 1-indexed track number
                     }
                 )
 
@@ -519,6 +520,7 @@ class TracksList(Container):
                     track_name = track["name"]
                     artist = track["artist"]
                     duration = self._format_duration(track["duration"])
+                    track_number = track.get("index", idx + 1)  # Use stored index or fallback
 
                     # Add ">" prefix if this is the currently playing track
                     # AND we're viewing the album that contains the playing track
@@ -528,7 +530,7 @@ class TracksList(Container):
                         else "  "
                     )
                     display_text = (
-                        f"{prefix}{idx + 1}. {track_name} - {artist} ({duration})"
+                        f"{prefix}{track_number}. {track_name} - {artist} ({duration})"
                     )
 
                     # Update the CoverArtItem text
