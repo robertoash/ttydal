@@ -394,14 +394,13 @@ class TracksList(Container):
         header = self.query_one(Label)
         header.update(f"(t)racks - {item_name} (Loading...)")
 
-        # Clear the list and start loading in a worker
-        list_view = self.query_one("#tracks-listview", ListView)
-        list_view.clear()
+        # Clear state immediately
         self.tracks = []
 
         # Run the loading in a worker so UI can update
+        # Use exclusive=True to cancel any previous loading workers
         self.run_worker(
-            self._load_tracks_async(item_id, item_name, item_type), exclusive=False
+            self._load_tracks_async(item_id, item_name, item_type), exclusive=True
         )
 
     async def _load_tracks_async(
@@ -415,6 +414,10 @@ class TracksList(Container):
             item_type: Type of item ('album', 'playlist', or 'favorites')
         """
         try:
+            # Await clear to ensure old items are fully removed from DOM
+            list_view = self.query_one("#tracks-listview", ListView)
+            await list_view.clear()
+
             # Check cache first
             cache = TracksCache()
             cached_tracks = cache.get(item_id)
@@ -440,8 +443,9 @@ class TracksList(Container):
 
             log(f"  - Retrieved {len(tracks_list)} tracks")
 
-            # Populate ALL tracks
-            list_view = self.query_one("#tracks-listview", ListView)
+            # Build tracks array locally then assign atomically
+            new_tracks = []
+
             for idx, track in enumerate(tracks_list, 1):
                 track_name = track["name"]
                 artist = track.get("artist", "Unknown")
@@ -455,7 +459,7 @@ class TracksList(Container):
                 list_view.append(
                     ListItem(CoverArtItem(display_text, cover_url=cover_url))
                 )
-                self.tracks.append(
+                new_tracks.append(
                     {
                         "id": str(track["id"]),
                         "name": track_name,
@@ -467,7 +471,8 @@ class TracksList(Container):
                     }
                 )
 
-            log(f"  - Populated {len(self.tracks)} tracks in UI")
+            self.tracks = new_tracks
+            log(f"  - Loaded {len(self.tracks)} tracks")
 
             # Update header to remove loading text
             header = self.query_one(Label)
