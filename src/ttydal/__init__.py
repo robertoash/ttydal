@@ -8,26 +8,31 @@ from ttydal.config import ConfigManager
 
 def main() -> None:
     """Launch the ttydal TUI application."""
+    from ttydal.dirs import config_dir, log_dir
+
+    cfg_dir = config_dir()
+    log_path = log_dir() / "debug.log"
+
     parser = argparse.ArgumentParser(
         prog="ttydal",
         usage="ttydal [-h] [--init-config [--force]] [--debug]",
         description="Tidal in your terminal!",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "config:\n"
-            "  Config is stored at ~/.ttydal/config.json\n"
-            "  Run --init-config to create one from defaults\n"
-            "  The app works without a config file (uses bundled defaults)\n"
-            "\n"
-            "logs:\n"
-            "  Debug logs are written to ~/.ttydal/debug.log\n"
-            "  Enable with --debug or set debug_logging_enabled in config"
+            f"config:\n"
+            f"  Config is stored at {cfg_dir}/config.json\n"
+            f"  Run --init-config to create one from defaults\n"
+            f"  The app works without a config file (uses bundled defaults)\n"
+            f"\n"
+            f"logs:\n"
+            f"  Debug logs are written to {log_path}\n"
+            f"  Enable with --debug or set debug_logging_enabled in config"
         ),
     )
     parser.add_argument(
         "--init-config",
         action="store_true",
-        help="create default config at ~/.ttydal/config.json",
+        help=f"create default config at {cfg_dir}/config.json",
     )
     parser.add_argument(
         "--force",
@@ -60,9 +65,9 @@ def main() -> None:
     from ttydal.logger import log
     from ttydal.app import TtydalApp
 
-    log("="*80)
+    log("=" * 80)
     log("Starting ttydal application")
-    log("="*80)
+    log("=" * 80)
 
     app = None
     try:
@@ -89,11 +94,10 @@ def main() -> None:
         if app is not None:
             try:
                 # Ensure player is shutdown
-                if hasattr(app, 'player'):
+                if hasattr(app, "player"):
                     log("  - Final player shutdown check...")
                     app.player.shutdown()
             except Exception as e:
                 log(f"  - Error during final cleanup: {e}")
         log("Application exited")
-        log("="*80)
-
+        log("=" * 80)

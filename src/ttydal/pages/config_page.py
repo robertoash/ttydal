@@ -9,7 +9,6 @@ from textual.message import Message
 from ttydal.config import ConfigManager
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _nav = lambda action: get_key("navigation", action)
 _k = lambda action: get_key("config_page", action)
 
@@ -150,17 +149,13 @@ class ConfigPage(Container):
         # Valid theme options - extract just the theme IDs
         valid_theme_ids = [theme_id for _, theme_id in self.AVAILABLE_THEMES]
         theme_value = (
-            self.config.theme
-            if self.config.theme in valid_theme_ids
-            else "rose-pine"
+            self.config.theme if self.config.theme in valid_theme_ids else "rose-pine"
         )
 
         # Valid quality options
         valid_qualities = ["max", "high", "low"]
         quality_value = (
-            self.config.quality
-            if self.config.quality in valid_qualities
-            else "high"
+            self.config.quality if self.config.quality in valid_qualities else "high"
         )
 
         with VerticalScroll():
@@ -272,19 +267,19 @@ class ConfigPage(Container):
             self.post_message(self.ClearLogsRequested())
 
     def action_cursor_down(self) -> None:
-        """Move cursor down in focused widget (for vim j key)."""
+        """Move cursor down in focused widget."""
         focused = self.app.focused
         if isinstance(focused, Select):
             focused.action_cursor_down()
 
     def action_cursor_up(self) -> None:
-        """Move cursor up in focused widget (for vim k key)."""
+        """Move cursor up in focused widget."""
         focused = self.app.focused
         if isinstance(focused, Select):
             focused.action_cursor_up()
 
     def action_toggle_switch(self) -> None:
-        """Toggle focused switch widget (for space key)."""
+        """Toggle focused switch widget."""
         focused = self.app.focused
         if isinstance(focused, Switch):
             focused.toggle()

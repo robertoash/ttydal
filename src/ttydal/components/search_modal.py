@@ -12,7 +12,6 @@ from textual.widgets import Input, ListView, ListItem, Label
 from ttydal.logger import log
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("search_modal", action)
 
 

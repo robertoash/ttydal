@@ -13,7 +13,6 @@ from textual.widgets import Button, Label, Static
 from ttydal.logger import log
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("login_modal", action)
 
 
@@ -107,7 +106,7 @@ class LoginModal(ModalScreen):
         self,
         login_url: str | None = None,
         code: str | None = None,
-        status: str = "Waiting for login..."
+        status: str = "Waiting for login...",
     ):
         """Initialize the login modal.
 
@@ -130,7 +129,7 @@ class LoginModal(ModalScreen):
             yield Static(
                 self.login_url if self.login_url else "Loading...",
                 classes="url",
-                id="url-display"
+                id="url-display",
             )
 
             with Horizontal(classes="url-actions"):
@@ -141,7 +140,7 @@ class LoginModal(ModalScreen):
             yield Static(
                 self.code if self.code else "Loading...",
                 classes="code",
-                id="code-display"
+                id="code-display",
             )
 
             yield Label(self.status_text, id="status-label", classes="status")
@@ -252,4 +251,5 @@ class LoginModal(ModalScreen):
 
     class CheckLogin(Message):
         """Message to check login status."""
+
         pass

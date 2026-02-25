@@ -7,13 +7,12 @@ from textual.containers import Container, Horizontal
 from ttydal.components.player_bar import PlayerBar
 from ttydal.components.albums_list import AlbumsList
 from ttydal.components.tracks_list import TracksList
-from ttydal.player import Player
-from ttydal.tidal_client import TidalClient
+from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
+from ttydal.services.tidal_client import TidalClient
 from ttydal.config import ConfigManager
 from ttydal.services import PlaybackService
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("player_page", action)
 
 
@@ -39,7 +38,7 @@ class PlayerPage(Container):
     def __init__(self):
         """Initialize the player page."""
         super().__init__()
-        self.player = Player()
+        self.player = MpvPlaybackEngine()
         self.tidal = TidalClient()
         self.config = ConfigManager()
         self.playback_service = PlaybackService(self.tidal, self.player)

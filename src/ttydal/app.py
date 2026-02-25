@@ -10,8 +10,8 @@ import textual_image.renderable  # noqa: F401
 
 from ttydal.pages.player_page import PlayerPage
 from ttydal.pages.config_page import ConfigPage
-from ttydal.tidal_client import TidalClient
-from ttydal.player import Player
+from ttydal.services.tidal_client import TidalClient
+from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
 from ttydal.components.player_bar import PlayerBar
 from ttydal.components.login_modal import LoginModal
 from ttydal.components.search_modal import SearchModal
@@ -23,7 +23,6 @@ from ttydal.config import ConfigManager
 from ttydal.logger import log
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("app", action)
 
 
@@ -73,7 +72,7 @@ class TtydalApp(App):
         log("  - TidalClient created")
 
         log("  - Creating Player...")
-        self.player = Player()
+        self.player = MpvPlaybackEngine()
         log("  - Player created")
 
         log("  - Creating ConfigManager...")
@@ -587,9 +586,9 @@ class TtydalApp(App):
         """
         log("Clear logs requested from config page")
         try:
-            from pathlib import Path
+            from ttydal.dirs import log_dir
 
-            log_file = Path.home() / ".ttydal" / "debug.log"
+            log_file = log_dir() / "debug.log"
 
             if log_file.exists():
                 # Clear the log file by truncating it

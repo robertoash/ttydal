@@ -1,13 +1,16 @@
 """Configuration manager for ttydal.
 
-Manages application configuration stored in ~/.ttydal/config.json
+Manages application configuration stored in the platform config directory.
+Run `ttydal --init-config` to create a config file from bundled defaults.
+The app works without a config file (uses bundled defaults in-memory).
 """
 
 import json
 import shutil
 from importlib import resources
-from pathlib import Path
 from typing import Any
+
+from ttydal.dirs import config_dir
 
 
 class ConfigManager:
@@ -27,7 +30,7 @@ class ConfigManager:
         if self._initialized:
             return
 
-        self.config_dir = Path.home() / ".ttydal"
+        self.config_dir = config_dir()
         self.config_file = self.config_dir / "config.json"
         self._config: dict[str, Any] = {}
         self._debug_override: bool = False
@@ -56,8 +59,8 @@ class ConfigManager:
             self._config = self._get_default_config()
 
     @staticmethod
-    def init_config(force: bool = False) -> Path:
-        """Copy the bundled default config to ~/.ttydal/config.json.
+    def init_config(force: bool = False) -> "Path":
+        """Copy the bundled default config to the platform config directory.
 
         Args:
             force: Overwrite existing config if True.
@@ -68,18 +71,19 @@ class ConfigManager:
         Raises:
             FileExistsError: If config already exists and force is False.
         """
-        config_dir = Path.home() / ".ttydal"
-        config_file = config_dir / "config.json"
+        from pathlib import Path
+        cfg_dir = config_dir()
+        cfg_file = cfg_dir / "config.json"
 
-        if config_file.exists() and not force:
+        if cfg_file.exists() and not force:
             raise FileExistsError(
-                f"Config already exists at {config_file}. Use --force to overwrite."
+                f"Config already exists at {cfg_file}. Use --force to overwrite."
             )
 
-        config_dir.mkdir(parents=True, exist_ok=True)
+        cfg_dir.mkdir(parents=True, exist_ok=True)
         default_config_file = resources.files("ttydal").joinpath("default_config.json")
-        shutil.copy2(str(default_config_file), str(config_file))
-        return config_file
+        shutil.copy2(str(default_config_file), str(cfg_file))
+        return cfg_file
 
     def _save_config(self) -> None:
         """Save configuration to file."""

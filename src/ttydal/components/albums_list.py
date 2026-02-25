@@ -12,14 +12,13 @@ from textual.containers import Container
 from textual.widgets import ListItem, ListView, Label
 from textual.message import Message
 
-from ttydal.tidal_client import TidalClient
+from ttydal.services.tidal_client import TidalClient
 from ttydal.services import AlbumsService, TracksService, TidalServiceError
 from ttydal.services.tracks_cache import TracksCache
 from ttydal.logger import log
 from ttydal.components.cover_art_item import CoverArtItem
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("albums_list", action)
 _nav = lambda action: get_key("navigation", action)
 
@@ -61,6 +60,10 @@ class AlbumsList(Container):
 
     AlbumsList ListItem {
         height: 3;
+    }
+
+    AlbumsList ListItem:odd {
+        background: $boost;
     }
     """
 
@@ -139,6 +142,8 @@ class AlbumsList(Container):
         # Find the index of the saved selection
         for idx, album in enumerate(self.albums):
             if album["id"] == self._saved_selection_id:
+                # reset index to force highlight to be rebuild on the ui
+                list_view.index = None
                 list_view.index = idx
                 log(f"  - Selection restored to index {idx}")
                 return
@@ -382,17 +387,17 @@ class AlbumsList(Container):
         self.load_albums()
 
     def action_cursor_down(self) -> None:
-        """Move cursor down in the list (vim j key)."""
+        """Move cursor down in the list."""
         list_view = self.query_one("#albums-listview", ListView)
         list_view.action_cursor_down()
 
     def action_cursor_up(self) -> None:
-        """Move cursor up in the list (vim k key)."""
+        """Move cursor up in the list."""
         list_view = self.query_one("#albums-listview", ListView)
         list_view.action_cursor_up()
 
     def action_focus_tracks(self) -> None:
-        """Move focus to tracks list (right navigation)."""
+        """Move focus to tracks list."""
         from ttydal.components.tracks_list import TracksList
 
         try:

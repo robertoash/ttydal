@@ -8,17 +8,15 @@ from textual.containers import Container
 from textual.widgets import ListItem, ListView, Label
 from textual.message import Message
 
-from ttydal.tidal_client import TidalClient
+from ttydal.services.tidal_client import TidalClient
 from ttydal.services import TracksService, TidalServiceError
 from ttydal.services.tracks_cache import TracksCache
 from ttydal.logger import log
 from ttydal.components.cover_art_item import CoverArtItem
 from ttydal.keybindings import get_key
 
-# Load keybindings at module import time
 _k = lambda action: get_key("tracks_list", action)
 _nav = lambda action: get_key("navigation", action)
-
 
 
 # Pre-fetch next track URL this many seconds before current track ends
@@ -63,6 +61,10 @@ class TracksList(Container):
 
     TracksList ListItem {
         height: 3;
+    }
+
+    TracksList ListItem:odd {
+        background: $boost;
     }
     """
 
@@ -123,9 +125,9 @@ class TracksList(Container):
         """Initialize when mounted."""
         # Register callbacks for track end and time position events
         if not self._track_end_callback_registered:
-            from ttydal.player import Player
+            from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
 
-            player = Player()
+            player = MpvPlaybackEngine()
             player.register_callback("on_track_end", self._on_track_end)
             player.register_callback("on_time_pos_change", self._on_time_pos_change)
             self._track_end_callback_registered = True
@@ -218,9 +220,9 @@ class TracksList(Container):
             return
 
         # Get track duration from player
-        from ttydal.player import Player
+        from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
 
-        player = Player()
+        player = MpvPlaybackEngine()
         duration = player.get_duration()
 
         # Skip if duration unknown or track too short
@@ -232,7 +234,9 @@ class TracksList(Container):
         if time_remaining <= PREFETCH_SECONDS_BEFORE_END and time_remaining > 0:
             # Start pre-fetching in background
             self._prefetch_in_progress = True
-            log(f"TracksList: Starting pre-fetch ({time_remaining:.1f}s before track end)")
+            log(
+                f"TracksList: Starting pre-fetch ({time_remaining:.1f}s before track end)"
+            )
             self.run_worker(self._prefetch_next_track(config.quality), exclusive=False)
 
     async def _prefetch_next_track(self, quality: str) -> None:
@@ -545,7 +549,9 @@ class TracksList(Container):
                     track_name = track["name"]
                     artist = track["artist"]
                     duration = self._format_duration(track["duration"])
-                    track_number = track.get("index", idx + 1)  # Use stored index or fallback
+                    track_number = track.get(
+                        "index", idx + 1
+                    )  # Use stored index or fallback
 
                     # Add ">" prefix if this is the currently playing track
                     # AND we're viewing the album that contains the playing track
@@ -573,26 +579,75 @@ class TracksList(Container):
             log(f"  - Error updating track indicators: {e}")
 
     def action_play_selected_track(self) -> None:
-        """Play the currently selected track (always starts from beginning)."""
-        log("TracksList: Play selected track action triggered")
+        """Play the currently selected track or toggle pause (space key action).
+
+        Behavior:
+        - If no track selected: do nothing
+        - If selected track is different from playing track: play selected track
+        - If selected track is same as playing track: toggle pause
+        - If no track is playing: play selected track
+        """
+        log("=" * 80)
+        log("TracksList: Space key action triggered")
         list_view = self.query_one("#tracks-listview", ListView)
         index = list_view.index
+        log(f"  - ListView index: {index}")
+        log(f"  - Total tracks: {len(self.tracks)}")
+        log(f"  - Current playing index: {self.current_playing_index}")
 
         if index is None or index >= len(self.tracks):
-            log("  - No track selected, nothing to play")
+            log("  - No track selected, toggling pause/play")
+            # No track selected, toggle pause on whatever is playing
+            from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
+
+            player = MpvPlaybackEngine()
+            player.toggle_pause()
+            log("=" * 80)
             return
 
         selected_track = self.tracks[index]
-        log(f"  - Playing: {selected_track['name']}")
+        log(
+            f"  - Selected track: {selected_track['name']} (ID: {selected_track['id']})"
+        )
 
-        # Update current playing index and album
-        self.current_playing_index = index
-        self._playing_item_id = self.current_item_id
+        # Get currently playing track
+        from ttydal.services.mpv_playback_engine import MpvPlaybackEngine
 
-        # Update visual indicators
-        self._update_track_indicators()
+        player = MpvPlaybackEngine()
+        current_track = player.get_current_track()
+        log(
+            f"  - Current playing track: {current_track.get('name', 'Unknown') if current_track else 'None'}"
+        )
+        log(
+            f"  - Current playing track ID: {current_track.get('id', 'Unknown') if current_track else 'None'}"
+        )
 
-        self.post_message(self.TrackSelected(selected_track["id"], selected_track))
+        if current_track and current_track.get("id") == selected_track["id"]:
+            # Same track is selected and playing, toggle pause
+            log("  - Same track already playing, toggling pause")
+            player.toggle_pause()
+            log("=" * 80)
+        else:
+            # Different track or no track playing, play the selected track
+            if current_track:
+                log(
+                    "  - Different track selected (current: {current_track.get('name', 'Unknown')}), playing new track"
+                )
+            else:
+                log("  - No track playing, starting playback")
+
+            # Update current playing index and album
+            self.current_playing_index = index
+            self._playing_item_id = self.current_item_id
+            log(f"  - Updated current playing index to: {index}")
+
+            # Update visual indicators
+            self._update_track_indicators()
+            log("  - Updated visual indicators")
+
+            log("  - Posting TrackSelected message")
+            self.post_message(self.TrackSelected(selected_track["id"], selected_track))
+            log("=" * 80)
 
     def action_refresh_tracks(self) -> None:
         """Refresh the current tracks list (r key action).
@@ -612,17 +667,17 @@ class TracksList(Container):
             log("  - No tracks loaded yet, nothing to refresh")
 
     def action_cursor_down(self) -> None:
-        """Move cursor down in the list (vim j key)."""
+        """Move cursor down in the list."""
         list_view = self.query_one("#tracks-listview", ListView)
         list_view.action_cursor_down()
 
     def action_cursor_up(self) -> None:
-        """Move cursor up in the list (vim k key)."""
+        """Move cursor up in the list."""
         list_view = self.query_one("#tracks-listview", ListView)
         list_view.action_cursor_up()
 
     def action_focus_albums(self) -> None:
-        """Move focus to albums list (left navigation)."""
+        """Move focus to albums list."""
         from ttydal.components.albums_list import AlbumsList
 
         try:
