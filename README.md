@@ -52,13 +52,18 @@ https://github.com/user-attachments/assets/ea975bea-b8f6-4d1a-a309-ec2d54390c3a
 
 ```bash
 # pipx (recommend)
-pipx install sqlit-tui
+pipx install ttydal
 
 # uv
-uv tool install sqlit-tui
+uv tool install ttydal
 
 # pip
-pip install sqlit-tui
+pip install ttydal
+```
+
+Then use it:
+```bash
+ttydal
 ```
 
 ### For development
@@ -104,55 +109,7 @@ pip install sqlit-tui
 
 ## Keybindings
 
-### Navigation
-
-| Key | Action |
-|-----|--------|
-| `p` | Switch to Player page |
-| `c` | Switch to Config page |
-| `a` | Focus Albums/Playlists list |
-| `t` | Focus Tracks list |
-| `up/down` | Navigate through lists |
-| `enter` | Select item / Play track (always starts from beginning) |
-| `/` | Open fuzzy search |
-
-### Search Modal
-
-| Key | Action |
-|-----|--------|
-| `enter` | Navigate to selected album/track |
-| `space` | Play selected track (tracks only) |
-| `escape` | Close search |
-
-### Playback Controls
-
-| Key | Action |
-|-----|--------|
-| `space` | Toggle play/pause (works anywhere on player page) |
-| `shift+left` | Seek backward 10 seconds |
-| `shift+right` | Seek forward 10 seconds |
-| `N` (shift+n) | Play next track |
-| `P` (shift+p) | Play previous track |
-| `n` | Toggle auto-play next track on/off |
-| `s` | Toggle shuffle mode on/off |
-| `r` | Refresh current list (also clears relevant cache) |
-| `i` | Open cache info modal |
-| `v` | Toggle vibrant mode |
-
-### Login Modal
-
-| Key | Action |
-|-----|--------|
-| `o` | Open login URL in browser |
-| `c` | Copy login URL to clipboard |
-| `l` | Check login status |
-| `escape` | Close modal |
-
-### Application
-
-| Key | Action |
-|-----|--------|
-| `q` | Quit application |
+All keybindings are configurable. See [KEYBINDINGS.md](docs/KEYBINDINGS.md) for the full reference and instructions on customizing them.
 
 ## Configuration
 
