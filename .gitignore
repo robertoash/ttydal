@@ -12,3 +12,7 @@ wheels/
 # textual exemple
 textual/
 .beads/
+
+# wtf-sync: queue lives on wtf-sync branch via .wtf/ worktree
+.planning
+.wtf/
